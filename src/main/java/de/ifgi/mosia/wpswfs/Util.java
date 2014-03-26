@@ -26,10 +26,14 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
-public class FileUtil {
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.codec.CharEncoding;
+
+public class Util {
 
 	public static Set<String> readConfigFilePerLine(String resourcePath) throws IOException {
-		URL resURL = FileUtil.class.getResource(resourcePath);
+		URL resURL = Util.class.getResource(resourcePath);
 		URLConnection resConn = resURL.openConnection();
 		resConn.setUseCaches(false);
 		InputStream contents = resConn.getInputStream();
@@ -46,6 +50,28 @@ public class FileUtil {
 		sc.close();
 
 		return result;
+	}
+	
+	public static String readContent(HttpServletRequest req)
+			throws IOException {
+		String enc = req.getCharacterEncoding();
+		return readContent(req.getInputStream(), enc);
+	}
+	
+	public static String readContent(InputStream is, String enc) {
+		Scanner sc = new Scanner(is, enc == null ? CharEncoding.ISO_8859_1 : enc);
+		StringBuilder sb = new StringBuilder();
+
+		while (sc.hasNext()) {
+			sb.append(sc.nextLine());
+		}
+
+		sc.close();
+		return sb.toString();
+	}
+	
+	public static String readContent(InputStream is) {
+		return readContent(is, null);
 	}
 	
 }

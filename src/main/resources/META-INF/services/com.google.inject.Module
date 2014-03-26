@@ -1,1 +1,2 @@
 de.ifgi.mosia.wpswfs.guice.RequestHandlerModule
+de.ifgi.mosia.wpswfs.Configuration$ConfigurationModule

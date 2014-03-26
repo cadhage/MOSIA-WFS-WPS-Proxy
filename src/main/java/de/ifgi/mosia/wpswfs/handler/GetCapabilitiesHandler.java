@@ -23,8 +23,16 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class GetCapabilitiesHandler implements RequestHandler {
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+
+public class GetCapabilitiesHandler extends ProxyRequestHandler implements RequestHandler  {
+
+	private static final Logger logger = LoggerFactory.getLogger(GetCapabilitiesHandler.class);
+	
 	@Override
 	public boolean supportsRequestType(String request) {
 		return "GetCapabilities".equalsIgnoreCase(request);
@@ -32,8 +40,27 @@ public class GetCapabilitiesHandler implements RequestHandler {
 
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		resp.getWriter().append("WORKS!!");
-		resp.setStatus(200);
+		HttpResponse response;
+		try {
+			response = executeGetCapabilities();
+		}
+		catch (IOException e) {
+			logger.warn(e.getMessage(), e);
+			throw new IOException("Proxy server issue: "+e.getMessage());
+		}
+		
+		if (response.getStatusLine().getStatusCode() > HttpStatus.SC_MULTIPLE_CHOICES) {
+			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
+		}
+		else {
+			filterAndWriteResponse(response.getEntity(), resp);
+			resp.setStatus(200);
+		}
+		
+	}
+	
+	private HttpResponse executeGetCapabilities() throws IOException {
+		return executeHttpGet("request=GetCapabilities");
 	}
 
 }

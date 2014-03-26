@@ -19,17 +19,13 @@
 package de.ifgi.mosia.wpswfs;
 
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.CharEncoding;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -48,7 +44,6 @@ public class BaseServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 4589872023160154399L;
 	private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
-	private ExecutorService executor = Executors.newCachedThreadPool();
 	
 	@Inject
 	Set<RequestHandler> handlers;
@@ -61,7 +56,7 @@ public class BaseServlet extends HttpServlet {
 		final ContentType type;
 		final String remoteHost;
 		try {
-			content = readContent(req);
+			content = Util.readContent(req);
 			type = ContentType.parse(req.getContentType());
 			remoteHost = req.getRemoteHost();
 		} catch (IOException e) {
@@ -117,18 +112,5 @@ public class BaseServlet extends HttpServlet {
 		
 	}
 
-	protected String readContent(HttpServletRequest req)
-			throws IOException {
-		String enc = req.getCharacterEncoding();
-		Scanner sc = new Scanner(req.getInputStream(), enc == null ? CharEncoding.ISO_8859_1 : enc);
-		StringBuilder sb = new StringBuilder();
-
-		while (sc.hasNext()) {
-			sb.append(sc.nextLine());
-		}
-
-		sc.close();
-		return sb.toString();
-	}
 
 }
