@@ -26,6 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 public interface RequestHandler {
 
 	boolean supportsRequestType(String request);
+	
+	boolean supportsHttpGet();
+	
+	boolean supportsHttpPost();
 
 	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException;
 

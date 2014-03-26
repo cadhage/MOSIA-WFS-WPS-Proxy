@@ -24,12 +24,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetFeatureHandler extends ProxyRequestHandler implements RequestHandler {
+public class GetFeatureHandler extends GenericRequestHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(GetFeatureHandler.class);
 	
@@ -39,7 +40,7 @@ public class GetFeatureHandler extends ProxyRequestHandler implements RequestHan
 	}
 
 	@Override
-	public void handleRequest(HttpServletRequest req, HttpServletResponse resp)
+	protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		HttpResponse response;
 		try {
@@ -54,13 +55,28 @@ public class GetFeatureHandler extends ProxyRequestHandler implements RequestHan
 			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
 		}
 		else {
-			writeResponse(response.getEntity(), resp);
+			postProcessFeaturesAndWriteResponse(response.getEntity(), resp);
 		}
+	}
+
+	private void postProcessFeaturesAndWriteResponse(HttpEntity entity,
+			HttpServletResponse resp) throws IOException {
+		writeResponse(entity, resp);
 	}
 
 	@SuppressWarnings("unchecked")
 	private HttpResponse executeGetFeature(Map<?, ?> parameterMap) throws IOException {
 		return executeHttpGet((Map<String, String[]>) parameterMap);
+	}
+
+	@Override
+	public boolean supportsHttpGet() {
+		return true;
+	}
+
+	@Override
+	public boolean supportsHttpPost() {
+		return true;
 	}
 
 }

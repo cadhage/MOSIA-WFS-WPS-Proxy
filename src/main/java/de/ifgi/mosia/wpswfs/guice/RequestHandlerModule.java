@@ -19,8 +19,10 @@
 package de.ifgi.mosia.wpswfs.guice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
+import de.ifgi.mosia.wpswfs.handler.GenericRequestHandler;
 import de.ifgi.mosia.wpswfs.handler.GetCapabilitiesHandler;
 import de.ifgi.mosia.wpswfs.handler.GetFeatureHandler;
 import de.ifgi.mosia.wpswfs.handler.RequestHandler;
@@ -33,6 +35,8 @@ public class RequestHandlerModule extends AbstractModule {
 				RequestHandler.class);
 		binder.addBinding().to(GetCapabilitiesHandler.class);
 		binder.addBinding().to(GetFeatureHandler.class);	
+		
+		binder().bind(GenericRequestHandler.class).in(Scopes.SINGLETON);;
 	}
 
 }

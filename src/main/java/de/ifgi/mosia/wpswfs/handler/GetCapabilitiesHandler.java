@@ -64,4 +64,14 @@ public class GetCapabilitiesHandler extends ProxyRequestHandler implements Reque
 		return executeHttpGet((Map<String, String[]>) map);
 	}
 
+	@Override
+	public boolean supportsHttpGet() {
+		return true;
+	}
+
+	@Override
+	public boolean supportsHttpPost() {
+		return false;
+	}
+
 }

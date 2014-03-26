@@ -26,14 +26,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.entity.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import de.ifgi.mosia.wpswfs.handler.GenericRequestHandler;
 import de.ifgi.mosia.wpswfs.handler.RequestHandler;
 
 @Singleton
@@ -43,28 +39,18 @@ public class BaseServlet extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 4589872023160154399L;
-	private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
 	
 	@Inject
 	Set<RequestHandler> handlers;
+	
+	@Inject
+	GenericRequestHandler genericHandler;
 
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		
-		final String content;
-		final ContentType type;
-		final String remoteHost;
-		try {
-			content = Util.readContent(req);
-			type = ContentType.parse(req.getContentType());
-			remoteHost = req.getRemoteHost();
-		} catch (IOException e) {
-			logger.warn(e.getMessage());
-			return;
-		}
-
-		resp.setStatus(HttpStatus.SC_NO_CONTENT);
+		genericHandler.handleRequest(req, resp);
 	}
 
 	@Override
@@ -76,6 +62,10 @@ public class BaseServlet extends HttpServlet {
 			handler = resolveHandler(req);
 		} catch (ServiceException e) {
 			throw new RuntimeException(e);
+		}
+		
+		if (handler == null) {
+			handler = genericHandler;
 		}
 		
 		handler.handleRequest(req, resp);
@@ -95,7 +85,7 @@ public class BaseServlet extends HttpServlet {
 			}
 		}
 		
-		throw new ServiceException("No handler for request type '"+ request+"' found");
+		return null;
 	}
 
 	private void assertServiceAndVersion(HttpServletRequest req) throws ServiceException {

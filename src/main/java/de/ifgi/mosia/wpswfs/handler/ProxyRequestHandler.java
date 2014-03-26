@@ -28,6 +28,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.google.inject.Inject;
@@ -65,6 +67,19 @@ public abstract class ProxyRequestHandler {
 		DefaultHttpClient client = new DefaultHttpClient();
 		
 		return client.execute(get);
+	}
+	
+	protected HttpResponse executeHttpPost(String content, String enc) throws IOException {
+		HttpPost post = new HttpPost(config.getWFSURL());
+		
+		post.setEntity(new StringEntity(content, enc));
+		
+		return executeHttpPost(post);
+	}
+	
+	protected HttpResponse executeHttpPost(HttpPost post) throws IOException {
+		DefaultHttpClient client = new DefaultHttpClient();
+		return client.execute(post);
 	}
 	
 	protected void filterAndWriteResponse(HttpEntity entity,
