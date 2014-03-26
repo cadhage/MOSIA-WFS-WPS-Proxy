@@ -1,0 +1,2 @@
+WFS_URL = http://the.public.url/for.get.and.post/requests
+WPS_URL = http://the.public.url/for.get.and.post/requests
