@@ -45,7 +45,7 @@ public class WPSWFSGuiceServletListener extends GuiceServletContextListener {
 
 			@Override
 			protected void configureServlets() {
-				serve("/*").with(BaseServlet.class);
+				serve("/wfs").with(BaseServlet.class);
 			}
 
 		});
