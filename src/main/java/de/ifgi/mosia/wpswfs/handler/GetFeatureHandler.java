@@ -29,21 +29,21 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public class GetFeatureHandler extends ProxyRequestHandler implements RequestHandler {
 
-public class GetCapabilitiesHandler extends ProxyRequestHandler implements RequestHandler  {
-
-	private static final Logger logger = LoggerFactory.getLogger(GetCapabilitiesHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(GetFeatureHandler.class);
 	
 	@Override
 	public boolean supportsRequestType(String request) {
-		return "GetCapabilities".equalsIgnoreCase(request);
+		return "GetFeature".equals(request);
 	}
 
 	@Override
-	public void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public void handleRequest(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
 		HttpResponse response;
 		try {
-			response = executeGetCapabilities(req.getParameterMap());
+			response = executeGetFeature(req.getParameterMap());
 		}
 		catch (IOException e) {
 			logger.warn(e.getMessage(), e);
@@ -54,14 +54,13 @@ public class GetCapabilitiesHandler extends ProxyRequestHandler implements Reque
 			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
 		}
 		else {
-			filterAndWriteResponse(response.getEntity(), resp);
+			writeResponse(response.getEntity(), resp);
 		}
-		
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private HttpResponse executeGetCapabilities(Map<?, ?> map) throws IOException {
-		return executeHttpGet((Map<String, String[]>) map);
+	private HttpResponse executeGetFeature(Map<?, ?> parameterMap) throws IOException {
+		return executeHttpGet((Map<String, String[]>) parameterMap);
 	}
 
 }

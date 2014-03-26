@@ -106,8 +106,12 @@ public class BaseServlet extends HttpServlet {
 			throw new ServiceException("'service' parameter must be set to 'WFS'");
 		}
 		
-		if (version == null || !version.equalsIgnoreCase("2.0.0")) {
-			throw new ServiceException("'version' parameter must be set to '2.0.0'");
+		if (version == null) {
+			version = req.getParameter("acceptversions");
+			
+			if (version == null || !version.equalsIgnoreCase("2.0.0")) {
+				throw new ServiceException("'version' (or 'acceptversions') parameter must be set to '2.0.0'");
+			}
 		}
 		
 	}

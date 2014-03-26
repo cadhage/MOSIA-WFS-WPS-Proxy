@@ -22,6 +22,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
 
 import de.ifgi.mosia.wpswfs.handler.GetCapabilitiesHandler;
+import de.ifgi.mosia.wpswfs.handler.GetFeatureHandler;
 import de.ifgi.mosia.wpswfs.handler.RequestHandler;
 
 public class RequestHandlerModule extends AbstractModule {
@@ -30,7 +31,8 @@ public class RequestHandlerModule extends AbstractModule {
 	protected void configure() {
 		Multibinder<RequestHandler> binder = Multibinder.newSetBinder(binder(),
 				RequestHandler.class);
-		binder.addBinding().to(GetCapabilitiesHandler.class);		
+		binder.addBinding().to(GetCapabilitiesHandler.class);
+		binder.addBinding().to(GetFeatureHandler.class);	
 	}
 
 }
