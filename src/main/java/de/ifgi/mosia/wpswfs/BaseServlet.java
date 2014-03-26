@@ -49,8 +49,11 @@ public class BaseServlet extends HttpServlet {
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		
-		genericHandler.handleRequest(req, resp);
+		try {
+			genericHandler.handleRequest(req, resp);
+		} catch (ServiceException e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
@@ -68,7 +71,11 @@ public class BaseServlet extends HttpServlet {
 			handler = genericHandler;
 		}
 		
-		handler.handleRequest(req, resp);
+		try {
+			handler.handleRequest(req, resp);
+		} catch (ServiceException e) {
+			throw new IOException(e);
+		}
 	}
 	
 	private RequestHandler resolveHandler(HttpServletRequest req) throws ServiceException {

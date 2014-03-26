@@ -19,16 +19,30 @@
 package de.ifgi.mosia.wpswfs.handler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.HttpEntity;
+import net.opengis.wfs.x20.FeatureCollectionDocument;
+import net.opengis.wfs.x20.FeatureCollectionType;
+import net.opengis.wfs.x20.MemberPropertyType;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.xmlbeans.XmlCursor;
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3.x2003.x05.soapEnvelope.EnvelopeDocument;
+
+import aero.aixm.schema.x51.RouteSegmentType;
+import de.ifgi.mosia.wpswfs.ServiceException;
 
 public class GetFeatureHandler extends GenericRequestHandler {
 
@@ -40,8 +54,8 @@ public class GetFeatureHandler extends GenericRequestHandler {
 	}
 
 	@Override
-	protected void handleGet(HttpServletRequest req, HttpServletResponse resp)
-			throws IOException {
+	protected HttpResponse handleGet(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, ServiceException {
 		HttpResponse response;
 		try {
 			response = executeGetFeature(req.getParameterMap());
@@ -55,13 +69,120 @@ public class GetFeatureHandler extends GenericRequestHandler {
 			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
 		}
 		else {
-			postProcessFeaturesAndWriteResponse(response.getEntity(), resp);
+			return postProcessFeatures(response);
 		}
 	}
+	
 
-	private void postProcessFeaturesAndWriteResponse(HttpEntity entity,
-			HttpServletResponse resp) throws IOException {
-		writeResponse(entity, resp);
+	@Override
+	protected HttpResponse handlePost(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, ServiceException {
+		HttpResponse result = super.handlePost(req, resp);
+		return postProcessFeatures(result);
+	}
+
+	private HttpResponse postProcessFeatures(HttpResponse response) throws IOException, ServiceException {
+		BasicHttpResponse result = new BasicHttpResponse(response.getStatusLine(), null, response.getLocale());
+		
+		XmlObject xo;
+		try {
+			xo = XmlObject.Factory.parse(response.getEntity().getContent());
+		} catch (IllegalStateException e) {
+			throw new IOException(e);
+		} catch (XmlException e) {
+			throw new IOException(e);
+		}
+		
+		List<XmlObject> processCollection = null;
+		FeatureCollectionType originalCollection = null;
+		/*
+		 * soap stuff
+		 */
+		if (xo instanceof EnvelopeDocument) {
+			XmlCursor bodyCur = ((EnvelopeDocument) xo).getEnvelope().getBody().newCursor();
+			bodyCur.toFirstContentToken();
+			XmlObject obj = bodyCur.getObject();
+			
+			if (obj instanceof FeatureCollectionType) {
+				originalCollection = (FeatureCollectionType) obj;
+				processCollection = processFeatureCollection(originalCollection);	
+			}
+			
+		}
+		else if (xo instanceof FeatureCollectionDocument) {
+			originalCollection = ((FeatureCollectionDocument) xo).getFeatureCollection();
+			processCollection = processFeatureCollection(originalCollection);
+		}
+		
+		/*
+		 * TODO: wrap with SOAP if required
+		 */
+		if (processCollection != null && originalCollection != null) {
+			result.setEntity(new StringEntity(createFeatureCollectionResponse(processCollection, originalCollection)));
+		}
+		else {
+			throw new ServiceException("Could not process the FeatureCollection.");
+		}
+		
+		return result;
+	}
+
+	private String createFeatureCollectionResponse(
+			List<XmlObject> processCollection, FeatureCollectionType originalCollection) {
+		FeatureCollectionDocument doc = FeatureCollectionDocument.Factory.newInstance();
+		
+		/*
+		 * take the original response document
+		 * and replace every member with the processed member
+		 */
+		for (int i = 0; i < originalCollection.getMemberArray().length; i++) {
+			MemberPropertyType originalMember = originalCollection.getMemberArray(i);
+			
+			XmlCursor cur = originalMember.newCursor();
+			cur.toFirstChild();
+			
+			XmlObject newMember = processCollection.get(i);
+			cur.getObject().set(newMember);
+		}
+		
+		doc.setFeatureCollection(originalCollection);
+		return doc.xmlText();
+	}
+
+	private List<XmlObject> processFeatureCollection(FeatureCollectionType fc) {
+		List<XmlObject> processedCollection = new ArrayList<XmlObject>(fc.getMemberArray().length);
+		
+		for (MemberPropertyType member : fc.getMemberArray()) {
+			XmlCursor cur = member.newCursor();
+			cur.toFirstChild();
+			XmlObject obj = cur.getObject();
+			if (obj != null) {
+				processedCollection.add(processFeature(obj));
+			}
+		}
+		
+		return processedCollection;
+	}
+
+	/**
+	 * @param obj the original feature
+	 * @return the WPS processed feature or the original if processing is not supported
+	 */
+	private XmlObject processFeature(XmlObject obj) {
+		if (obj instanceof RouteSegmentType) {
+			return invokeWPS((RouteSegmentType) obj);
+		}
+		return obj;
+	}
+
+	/**
+	 * do the processing via WPS
+	 * 
+	 * @param obj the {@link RouteSegmentType} feature
+	 * @return the processed feature
+	 */
+	private XmlObject invokeWPS(RouteSegmentType obj) {
+		return obj;
 	}
 
 	@SuppressWarnings("unchecked")

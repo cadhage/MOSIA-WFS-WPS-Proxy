@@ -29,6 +29,8 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.CharEncoding;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 
 public class Util {
 
@@ -72,6 +74,18 @@ public class Util {
 	
 	public static String readContent(InputStream is) {
 		return readContent(is, null);
+	}
+
+	public static String readContent(HttpResponse response) throws IOException {
+		Header encHeader = response.getEntity().getContentEncoding();
+		String enc;
+		if (encHeader != null) {
+			enc = encHeader.getValue();
+		}
+		else {
+			enc = CharEncoding.ISO_8859_1;
+		}
+		return readContent(response.getEntity().getContent(), enc);
 	}
 	
 }

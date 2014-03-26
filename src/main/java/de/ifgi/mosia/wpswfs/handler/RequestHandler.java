@@ -23,6 +23,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.ifgi.mosia.wpswfs.ServiceException;
+
 public interface RequestHandler {
 
 	boolean supportsRequestType(String request);
@@ -31,6 +33,6 @@ public interface RequestHandler {
 	
 	boolean supportsHttpPost();
 
-	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException;
+	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException;
 
 }

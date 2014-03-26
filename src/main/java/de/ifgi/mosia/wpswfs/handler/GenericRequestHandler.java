@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 
+import de.ifgi.mosia.wpswfs.ServiceException;
 import de.ifgi.mosia.wpswfs.Util;
 
 @Singleton
@@ -56,19 +57,22 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 
 	@Override
 	public void handleRequest(HttpServletRequest req, HttpServletResponse resp)
-			throws IOException {
+			throws IOException, ServiceException {
+		HttpResponse response;
 		if (req.getMethod().equalsIgnoreCase("GET")) {
-			handleGet(req, resp);
+			response = handleGet(req, resp);
 		}
 		else if (req.getMethod().equalsIgnoreCase("POST")) {
-			handlePost(req, resp);
+			response = handlePost(req, resp);
 		}
 		else {
 			throw new UnsupportedOperationException("Only GET and POST are supported.");
 		}
+		
+		assertAndWriteResponse(resp, response);
 	}
 
-	protected void handlePost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected HttpResponse handlePost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
 		String enc = req.getCharacterEncoding();
 		
 		if (enc == null || enc.isEmpty()) {
@@ -87,12 +91,12 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 			throw new IOException("Proxy server issue: "+e.getMessage());
 		}
 		
-		assertAndWriteResponse(resp, response);		
+		return response;
 	}
 
 
 	@SuppressWarnings("unchecked")
-	protected void handleGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected HttpResponse handleGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
 		HttpResponse response;
 		try {
 			response = executeHttpGet((Map<String, String[]>) req.getParameterMap());
@@ -102,7 +106,7 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 			throw new IOException("Proxy server issue: "+e.getMessage());
 		}
 		
-		assertAndWriteResponse(resp, response);		
+		return response;
 	}
 
 	private void assertAndWriteResponse(HttpServletResponse resp,
