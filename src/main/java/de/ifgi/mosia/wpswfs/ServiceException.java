@@ -16,17 +16,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ifgi.mosia.wpswfs.handler;
+package de.ifgi.mosia.wpswfs;
 
-import java.io.IOException;
+public class ServiceException extends Exception {
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-public interface RequestHandler {
-
-	boolean supportsRequestType(String request);
-
-	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException;
+	public ServiceException(String string) {
+		super(string);
+	}
 
 }

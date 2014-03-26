@@ -18,6 +18,22 @@
  */
 package de.ifgi.mosia.wpswfs.handler;
 
-public class GetCapabilitiesHandler {
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class GetCapabilitiesHandler implements RequestHandler {
+
+	@Override
+	public boolean supportsRequestType(String request) {
+		return "GetCapabilities".equalsIgnoreCase(request);
+	}
+
+	@Override
+	public void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		resp.getWriter().append("WORKS!!");
+		resp.setStatus(200);
+	}
 
 }

@@ -16,17 +16,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.ifgi.mosia.wpswfs.handler;
+package de.ifgi.mosia.wpswfs.guice;
 
-import java.io.IOException;
+import com.google.inject.AbstractModule;
+import com.google.inject.multibindings.Multibinder;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import de.ifgi.mosia.wpswfs.handler.GetCapabilitiesHandler;
+import de.ifgi.mosia.wpswfs.handler.RequestHandler;
 
-public interface RequestHandler {
+public class RequestHandlerModule extends AbstractModule {
 
-	boolean supportsRequestType(String request);
-
-	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException;
+	@Override
+	protected void configure() {
+		Multibinder<RequestHandler> binder = Multibinder.newSetBinder(binder(),
+				RequestHandler.class);
+		binder.addBinding().to(GetCapabilitiesHandler.class);		
+	}
 
 }

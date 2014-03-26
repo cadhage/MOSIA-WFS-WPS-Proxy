@@ -20,6 +20,7 @@ package de.ifgi.mosia.wpswfs;
 
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,7 +35,10 @@ import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import de.ifgi.mosia.wpswfs.handler.RequestHandler;
 
 @Singleton
 public class BaseServlet extends HttpServlet {
@@ -45,6 +49,9 @@ public class BaseServlet extends HttpServlet {
 	private static final long serialVersionUID = 4589872023160154399L;
 	private static final Logger logger = LoggerFactory.getLogger(BaseServlet.class);
 	private ExecutorService executor = Executors.newCachedThreadPool();
+	
+	@Inject
+	Set<RequestHandler> handlers;
 
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
@@ -63,6 +70,51 @@ public class BaseServlet extends HttpServlet {
 		}
 
 		resp.setStatus(HttpStatus.SC_NO_CONTENT);
+	}
+
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		RequestHandler handler;
+		try {
+			assertServiceAndVersion(req);
+			handler = resolveHandler(req);
+		} catch (ServiceException e) {
+			throw new RuntimeException(e);
+		}
+		
+		handler.handleRequest(req, resp);
+	}
+	
+	private RequestHandler resolveHandler(HttpServletRequest req) throws ServiceException {
+		String request = req.getParameter("request");
+		
+		if (request == null || request.isEmpty()) {
+			throw new ServiceException("The parameter 'request' was not provided");
+		}
+		
+		
+		for (RequestHandler h : handlers) {
+			if (h.supportsRequestType(request)) {
+				return h;
+			}
+		}
+		
+		throw new ServiceException("No handler for request type '"+ request+"' found");
+	}
+
+	private void assertServiceAndVersion(HttpServletRequest req) throws ServiceException {
+		String result = req.getParameter("service");
+		String version = req.getParameter("version");
+		
+		if (result == null || !result.equalsIgnoreCase("WFS")) {
+			throw new ServiceException("'service' parameter must be set to 'WFS'");
+		}
+		
+		if (version == null || !version.equalsIgnoreCase("2.0.0")) {
+			throw new ServiceException("'version' parameter must be set to '2.0.0'");
+		}
+		
 	}
 
 	protected String readContent(HttpServletRequest req)
