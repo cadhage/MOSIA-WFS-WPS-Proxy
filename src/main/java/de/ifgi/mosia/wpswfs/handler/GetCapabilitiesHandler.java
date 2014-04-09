@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +49,7 @@ public class GetCapabilitiesHandler extends ProxyRequestHandler implements Reque
 			throw new IOException("Proxy server issue: "+e.getMessage());
 		}
 		
-		if (response.getStatusLine().getStatusCode() > HttpStatus.SC_MULTIPLE_CHOICES) {
-			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
-		}
-		else {
-			filterAndWriteResponse(response.getEntity(), resp);
-		}
+		filterAndWriteResponse(response.getEntity(), response.getStatusLine().getStatusCode(), resp);
 		
 	}
 	

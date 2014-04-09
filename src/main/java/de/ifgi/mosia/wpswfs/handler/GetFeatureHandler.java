@@ -50,7 +50,7 @@ public class GetFeatureHandler extends GenericRequestHandler {
 	
 	@Override
 	public boolean supportsRequestType(String request) {
-		return "GetFeature".equals(request);
+		return "GetFeature".equalsIgnoreCase(request);
 	}
 
 	@Override

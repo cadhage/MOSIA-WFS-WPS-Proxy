@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.CharEncoding;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,7 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 			throw new UnsupportedOperationException("Only GET and POST are supported.");
 		}
 		
-		assertAndWriteResponse(resp, response);
+		writeResponse(response, resp);
 	}
 
 	protected HttpResponse handlePost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
@@ -109,13 +108,4 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 		return response;
 	}
 
-	private void assertAndWriteResponse(HttpServletResponse resp,
-			HttpResponse response) throws IOException {
-		if (response.getStatusLine().getStatusCode() > HttpStatus.SC_MULTIPLE_CHOICES) {
-			throw new IOException("Proxy server issue. HTTP Status "+response.getStatusLine().getStatusCode());
-		}
-		else {
-			writeResponse(response.getEntity(), resp);
-		}
-	}
 }

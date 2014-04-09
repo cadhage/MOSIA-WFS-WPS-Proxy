@@ -61,6 +61,10 @@ public class Util {
 	}
 	
 	public static String readContent(InputStream is, String enc) {
+		if (is == null) {
+			return null;
+		}
+		
 		Scanner sc = new Scanner(is, enc == null ? CharEncoding.ISO_8859_1 : enc);
 		StringBuilder sb = new StringBuilder();
 

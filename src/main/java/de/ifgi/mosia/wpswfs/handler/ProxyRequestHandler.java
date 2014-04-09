@@ -19,6 +19,7 @@
 package de.ifgi.mosia.wpswfs.handler;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 
 import com.google.inject.Inject;
 
@@ -83,39 +85,71 @@ public abstract class ProxyRequestHandler {
 	}
 	
 	protected void filterAndWriteResponse(HttpEntity entity,
-			HttpServletResponse resp) throws IOException {
+			int statusCode, HttpServletResponse resp) throws IOException {
 		String enc = entity.getContentEncoding() == null ? null : entity.getContentEncoding().getValue();
 		String content = Util.readContent(entity.getContent(), enc);
 		
 		String filteredContent = content.replace(config.getWFSURL(), config.getServiceURL());
 		
-		writeResponse(filteredContent, enc, entity.getContentType(), resp);
+		writeResponse(filteredContent, enc, entity.getContentType(), statusCode, resp);
 	}
 
-	protected void writeResponse(HttpEntity entity,
+	protected void writeResponse(HttpResponse proxyResponse,
 			HttpServletResponse resp) throws IOException {
-		String enc = entity.getContentEncoding() == null ? null : entity.getContentEncoding().getValue();
+		HttpEntity entity = proxyResponse.getEntity();
+		
+		String enc;
+		InputStream content;
+		Header contentType;
+		if (entity == null) {
+			enc = null;	
+			content = null;
+			contentType = null;
+		}
+		else {
+			enc = entity.getContentEncoding() == null ? null : entity.getContentEncoding().getValue();
+			content = entity.getContent();
+			contentType = entity.getContentType();
+		}
+		
+		
 		
 		if (enc != null && enc.isEmpty()) {
 			enc = null;
 		}
 		
-		writeResponse(Util.readContent(entity.getContent(), enc), enc, entity.getContentType(), resp);
+		writeResponse(Util.readContent(content, enc), enc, contentType,
+				proxyResponse.getStatusLine().getStatusCode(), resp);
 	}
 	
 	protected void writeResponse(String filteredContent, String enc,
-			Header contentType, HttpServletResponse resp) throws IOException {
+			Header contentType, int statusCode, HttpServletResponse resp) throws IOException {
 		if (enc == null) {
 			enc = "UTF-8";
 		}
 		
-		byte[] bytes = filteredContent.getBytes(enc);
+		byte[] bytes;
+		if (statusCode == HttpStatus.SC_NO_CONTENT) {
+			bytes = new byte[0];
+		}
+		else if (filteredContent == null) {
+			/*
+			 * recursive call end exit
+			 */
+			writeResponse(new ExceptionReportWrapper(new IOException("Proxy server issue")).toXML(),
+					"UTF-8", new BasicHeader("Content-Type", "application/xml"),
+					HttpStatus.SC_INTERNAL_SERVER_ERROR, resp);
+			return;
+		}
+		else {
+			bytes = filteredContent.getBytes(enc);
+		}
 		
 		resp.setContentType(contentType == null ? "application/xml" : contentType.getValue());
 		resp.setCharacterEncoding(enc);
 		resp.setContentLength(bytes.length);
 		
-		resp.setStatus(HttpStatus.SC_OK);
+		resp.setStatus(statusCode);
 		
 		resp.getOutputStream().write(bytes);
 		resp.getOutputStream().flush();		

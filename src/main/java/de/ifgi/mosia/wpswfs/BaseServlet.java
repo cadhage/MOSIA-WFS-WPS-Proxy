@@ -61,7 +61,7 @@ public class BaseServlet extends HttpServlet {
 			throws ServletException, IOException {
 		RequestHandler handler;
 		try {
-			assertServiceAndVersion(req);
+//			assertServiceAndVersion(req);
 			handler = resolveHandler(req);
 		} catch (ServiceException e) {
 			throw new RuntimeException(e);
@@ -95,7 +95,7 @@ public class BaseServlet extends HttpServlet {
 		return null;
 	}
 
-	private void assertServiceAndVersion(HttpServletRequest req) throws ServiceException {
+	protected void assertServiceAndVersion(HttpServletRequest req) throws ServiceException {
 		String result = req.getParameter("service");
 		String version = req.getParameter("version");
 		
