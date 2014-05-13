@@ -36,7 +36,7 @@ import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 public class RouteUtil {
 	
-	public static Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
+	public static Polygon routeToPolygon(Coordinate start, Coordinate end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
 			String srsName) {
 		Ellipsoid ell = resolveEllipsoid(srsName);
 		
@@ -53,6 +53,11 @@ public class RouteUtil {
 		double distanceRight = convertToMeters(widthRight);
 		
 		return calculatePolygon(ell, startCoord, endCoord, routeBearing, distanceRight, distanceLeft);
+	}
+	
+	public static Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
+			String srsName) {
+		return routeToPolygon(start.getCoordinate(), end.getCoordinate(), widthLeft, widthRight, srsName);
 	}
 
 	private static Ellipsoid resolveEllipsoid(String srsName) {
@@ -97,8 +102,8 @@ public class RouteUtil {
 		return UOMTools.convertToTargetUnit(number.getValue(), number.getUom(), "m");
 	}
 
-	private static GlobalCoordinates createCoordinate(Point p) {
-		return new GlobalCoordinates(p.getY(), p.getX());
+	private static GlobalCoordinates createCoordinate(Coordinate p) {
+		return new GlobalCoordinates(p.y, p.x);
 	}
 
 }
