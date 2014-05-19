@@ -65,6 +65,7 @@ import de.ifgi.mosia.geodesic.RouteUtil;
 @Singleton
 public class WPSConnector {
 	
+	private static final String CRS83_WITH_FL = "urn:ogc:def:crs:OGC:1.3:CRS84:3D-FL";
 	@Inject
 	RouteUtil routeUtil;
 
@@ -95,9 +96,10 @@ public class WPSConnector {
 			}
 			
 			if (coords != null && coords.size() > 1) {
-				ShellType shell = createShell(coords, widthLeft, widthRight, lowerLimit, upperLimit);
+				String gmlIdBase = routeSegmentType.getId()+"curve-3d-1";
+				ShellType shell = createShell(coords, widthLeft, widthRight, lowerLimit, upperLimit, gmlIdBase);
 				Extension ext = ts.getRouteSegmentTimeSlice().addNewExtension();
-				ext.addNewAbstractRouteSegmentExtension().set(createExtension(shell));
+				ext.addNewAbstractRouteSegmentExtension().set(createExtension(shell, gmlIdBase));
 				XmlUtil.qualifySubstitutionGroup(ext.getAbstractRouteSegmentExtension(), RouteSegment3DGeometryExtensionDocument.type.getDocumentElementName());
 			}
 		}
@@ -107,7 +109,7 @@ public class WPSConnector {
 
 	private ShellType createShell(List<Coordinate> coords,
 			NumberWithUOM widthLeft, NumberWithUOM widthRight,
-			NumberWithUOM lowerLimit, NumberWithUOM upperLimit) {
+			NumberWithUOM lowerLimit, NumberWithUOM upperLimit, String gmlIdBase) {
 		/*
 		 * make a polygon with left and right legs from first to last coord
 		 */
@@ -140,19 +142,20 @@ public class WPSConnector {
 		z.z = w.z;
 		
 		ShellType shell = ShellType.Factory.newInstance();
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, c, d, a});
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {w, z, y, x, w});
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, w, z, d, a});
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {b, c, y, x, b});
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, x, w, a});
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {d, z, y, c, d});
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, c, d, a}, gmlIdBase+"-bottom");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {w, z, y, x, w}, gmlIdBase+"-top");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, w, z, d, a}, gmlIdBase+"-front");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {b, c, y, x, b}, gmlIdBase+"-back");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, x, w, a}, gmlIdBase+"-left");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {d, z, y, c, d}, gmlIdBase+"-right");
 		
 		return shell;
 	}
 
 	private void createSolidFace(SurfacePropertyType target,
-			Coordinate[] coordinates) {
+			Coordinate[] coordinates, String gmlId) {
 		PolygonType poly = PolygonType.Factory.newInstance();
+		poly.setId(gmlId);
 		
 		AbstractRingPropertyType ext = poly.addNewExterior();
 		
@@ -180,12 +183,14 @@ public class WPSConnector {
 		XmlUtil.qualifySubstitutionGroup(target.getAbstractSurface(), PolygonDocument.type.getDocumentElementName());
 	}
 
-	private XmlObject createExtension(ShellType shell) {
+	private XmlObject createExtension(ShellType shell, String gmlIdBase) {
 		RouteSegment3DGeometryExtensionType ext = RouteSegment3DGeometryExtensionType.Factory.newInstance();
 		
 		SolidPropertyType curve3D = ext.addNewCurveExtend3D();
 		
 		SolidType solid = SolidType.Factory.newInstance();
+		solid.setSrsName(CRS83_WITH_FL);
+		solid.setId(gmlIdBase);
 		
 		ShellPropertyType shellProp = ShellPropertyType.Factory.newInstance();
 		shellProp.setShell(shell);
