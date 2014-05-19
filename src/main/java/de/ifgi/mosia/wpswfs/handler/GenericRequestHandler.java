@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.CharEncoding;
 import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Singleton;
 
 import de.ifgi.mosia.wpswfs.ServiceException;
-import de.ifgi.mosia.wpswfs.Util;
 
 @Singleton
 public class GenericRequestHandler extends ProxyRequestHandler implements RequestHandler {
@@ -61,9 +59,6 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 		if (req.getMethod().equalsIgnoreCase("GET")) {
 			response = handleGet(req, resp);
 		}
-		else if (req.getMethod().equalsIgnoreCase("POST")) {
-			response = handlePost(req, resp);
-		}
 		else {
 			throw new UnsupportedOperationException("Only GET and POST are supported.");
 		}
@@ -71,15 +66,7 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 		writeResponse(response, resp);
 	}
 
-	protected HttpResponse handlePost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException {
-		String enc = req.getCharacterEncoding();
-		
-		if (enc == null || enc.isEmpty()) {
-			enc = CharEncoding.ISO_8859_1;
-		}
-		
-		String content = Util.readContent(req.getInputStream(), enc);
-		
+	protected HttpResponse handlePost(String content, String enc, HttpServletResponse resp) throws IOException, ServiceException {
 		HttpResponse response;
 		
 		try {
@@ -106,6 +93,18 @@ public class GenericRequestHandler extends ProxyRequestHandler implements Reques
 		}
 		
 		return response;
+	}
+
+	@Override
+	public boolean supportsPostPayload(String payload) {
+		return true;
+	}
+
+	@Override
+	public void handlePostRequest(HttpServletRequest req,
+			HttpServletResponse resp, String payload, String encoding) throws IOException,
+			ServiceException {
+		writeResponse(handlePost(payload, encoding, resp), resp);
 	}
 
 }

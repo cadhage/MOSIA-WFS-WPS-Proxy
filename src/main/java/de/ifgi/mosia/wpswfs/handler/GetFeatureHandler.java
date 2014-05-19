@@ -37,6 +37,7 @@ import org.apache.http.message.BasicHttpResponse;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
+import org.apache.xmlbeans.XmlOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3.x2003.x05.soapEnvelope.EnvelopeDocument;
@@ -50,6 +51,7 @@ import de.ifgi.mosia.wpswfs.wps.WPSConnector;
 public class GetFeatureHandler extends GenericRequestHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(GetFeatureHandler.class);
+	XmlOptions PRETTY_PRINT = new XmlOptions().setSavePrettyPrint();
 	
 	@Inject
 	private WPSConnector wps;
@@ -81,9 +83,9 @@ public class GetFeatureHandler extends GenericRequestHandler {
 	
 
 	@Override
-	protected HttpResponse handlePost(HttpServletRequest req, HttpServletResponse resp)
+	protected HttpResponse handlePost(String content, String enc, HttpServletResponse resp)
 			throws IOException, ServiceException {
-		HttpResponse result = super.handlePost(req, resp);
+		HttpResponse result = super.handlePost(content, enc, resp);
 		return postProcessFeatures(result);
 	}
 
@@ -106,11 +108,24 @@ public class GetFeatureHandler extends GenericRequestHandler {
 		 */
 		if (xo instanceof EnvelopeDocument) {
 			XmlCursor bodyCur = ((EnvelopeDocument) xo).getEnvelope().getBody().newCursor();
-			bodyCur.toFirstContentToken();
 			XmlObject obj = bodyCur.getObject();
 			
-			if (obj instanceof FeatureCollectionType) {
+			XmlObject feat = obj.newCursor().getObject().selectChildren(FeatureCollectionDocument.type.getDocumentElementName())[0];
+			
+			if (feat instanceof FeatureCollectionType) {
 				originalCollection = (FeatureCollectionType) obj;
+				processCollection = processFeatureCollection(originalCollection);	
+			}
+			
+		}
+		else if (xo instanceof org.xmlsoap.schemas.soap.envelope.EnvelopeDocument) {
+			XmlCursor bodyCur = ((org.xmlsoap.schemas.soap.envelope.EnvelopeDocument) xo).getEnvelope().getBody().newCursor();
+			XmlObject obj = bodyCur.getObject();
+			
+			XmlObject feat = obj.newCursor().getObject().selectChildren(FeatureCollectionDocument.type.getDocumentElementName())[0];
+			
+			if (feat instanceof FeatureCollectionType) {
+				originalCollection = (FeatureCollectionType) feat;
 				processCollection = processFeatureCollection(originalCollection);	
 			}
 			
@@ -124,7 +139,26 @@ public class GetFeatureHandler extends GenericRequestHandler {
 		 * TODO: wrap with SOAP if required
 		 */
 		if (processCollection != null && originalCollection != null) {
-			result.setEntity(new StringEntity(createFeatureCollectionResponse(processCollection, originalCollection)));
+			FeatureCollectionDocument featureColl = createFeatureCollectionResponse(processCollection, originalCollection);
+			
+			String content;
+			if (xo instanceof org.xmlsoap.schemas.soap.envelope.EnvelopeDocument) {
+				org.xmlsoap.schemas.soap.envelope.EnvelopeDocument env = (org.xmlsoap.schemas.soap.envelope.EnvelopeDocument) xo;
+				env.getEnvelope().getBody().set(featureColl);
+				content = xo.xmlText(PRETTY_PRINT);
+			}
+			else if (xo instanceof EnvelopeDocument) {
+				EnvelopeDocument env = (EnvelopeDocument) xo;
+				env.getEnvelope().getBody().set(featureColl);
+				content = xo.xmlText(PRETTY_PRINT);
+			}
+			else {
+				content = featureColl.xmlText(PRETTY_PRINT);
+			}
+			
+			StringEntity se = new StringEntity(content);
+			se.setContentType(response.getEntity().getContentType());
+			result.setEntity(se);
 		}
 		else {
 			throw new ServiceException("Could not process the FeatureCollection.");
@@ -133,7 +167,7 @@ public class GetFeatureHandler extends GenericRequestHandler {
 		return result;
 	}
 
-	private String createFeatureCollectionResponse(
+	private FeatureCollectionDocument createFeatureCollectionResponse(
 			List<XmlObject> processCollection, FeatureCollectionType originalCollection) {
 		FeatureCollectionDocument doc = FeatureCollectionDocument.Factory.newInstance();
 		
@@ -152,7 +186,7 @@ public class GetFeatureHandler extends GenericRequestHandler {
 		}
 		
 		doc.setFeatureCollection(originalCollection);
-		return doc.xmlText();
+		return doc;
 	}
 
 	private List<XmlObject> processFeatureCollection(FeatureCollectionType fc) {

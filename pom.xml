@@ -173,7 +173,8 @@
 				<configuration>
 					<schemaDirectory>src/main/xsd</schemaDirectory>
 					<sourceSchemas>
-						<sourceSchema>mosia/routeSegment3DExtension.xsd</sourceSchema>
+<!-- 						<sourceSchema>mosia/routeSegment3DExtension.xsd</sourceSchema> -->
+						<sourceSchema>soap/envelope.xsd</sourceSchema>
 					</sourceSchemas>
 				</configuration>
 			</plugin>
@@ -189,6 +190,7 @@
 					</includes>
 					<excludes>
 						<exclude>src/main/java/aero/**/*.java</exclude>
+						<exclude>src/main/java/org/xmlsoap/**/*.java</exclude>
 					</excludes>
 					<properties>
 						<year>${project.inceptionYear}</year>

@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.CharEncoding;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -49,11 +51,46 @@ public class BaseServlet extends HttpServlet {
 	@Override
 	protected void doPost(final HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		RequestHandler handler;
+		String payload;
+		String enc;
 		try {
-			genericHandler.handleRequest(req, resp);
+			enc = req.getCharacterEncoding();
+			
+			if (enc == null || enc.isEmpty()) {
+				enc = CharEncoding.ISO_8859_1;
+			}
+			
+			payload = Util.readContent(req.getInputStream(), enc);
+			handler = resolveHandlerFromPost(payload);
+		} catch (ServiceException e) {
+			throw new RuntimeException(e);
+		}
+		
+		if (handler == null) {
+			handler = genericHandler;
+		}
+		
+		try {
+			handler.handlePostRequest(req, resp, payload, enc);
 		} catch (ServiceException e) {
 			throw new IOException(e);
 		}
+	}
+
+	private RequestHandler resolveHandlerFromPost(String payload) throws ServiceException, IOException {
+		if (payload == null || payload.isEmpty()) {
+			throw new ServiceException("The parameter 'request' was not provided");
+		}
+		
+		
+		for (RequestHandler h : handlers) {
+			if (h.supportsPostPayload(payload)) {
+				return h;
+			}
+		}
+		
+		return null;
 	}
 
 	@Override

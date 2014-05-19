@@ -28,6 +28,8 @@ import org.apache.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.ifgi.mosia.wpswfs.ServiceException;
+
 
 public class GetCapabilitiesHandler extends ProxyRequestHandler implements RequestHandler  {
 
@@ -66,6 +68,18 @@ public class GetCapabilitiesHandler extends ProxyRequestHandler implements Reque
 	@Override
 	public boolean supportsHttpPost() {
 		return false;
+	}
+
+	@Override
+	public boolean supportsPostPayload(String payload) {
+		return false;
+	}
+
+	@Override
+	public void handlePostRequest(HttpServletRequest req,
+			HttpServletResponse resp, String payload, String encoding)
+			throws IOException, ServiceException {
+		
 	}
 
 }

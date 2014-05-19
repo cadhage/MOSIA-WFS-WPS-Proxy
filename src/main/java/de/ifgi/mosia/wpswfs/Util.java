@@ -68,8 +68,10 @@ public class Util {
 		Scanner sc = new Scanner(is, enc == null ? CharEncoding.ISO_8859_1 : enc);
 		StringBuilder sb = new StringBuilder();
 
+		String sep = System.getProperty("line.separator");
 		while (sc.hasNext()) {
 			sb.append(sc.nextLine());
+			sb.append(sep);
 		}
 
 		sc.close();

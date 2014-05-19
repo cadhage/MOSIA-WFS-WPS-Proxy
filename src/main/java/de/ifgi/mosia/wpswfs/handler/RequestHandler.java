@@ -35,4 +35,9 @@ public interface RequestHandler {
 
 	void handleRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServiceException;
 
+	boolean supportsPostPayload(String payload);
+
+	void handlePostRequest(HttpServletRequest req, HttpServletResponse resp,
+			String payload, String encoding) throws IOException, ServiceException;
+
 }
