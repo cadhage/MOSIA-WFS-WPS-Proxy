@@ -60,7 +60,7 @@ public class RouteUtil {
 		});
 	}
 	
-	public Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
+	public Polygon routeToPolygon(Coordinate start, Coordinate end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
 			String srsName) {
 		Ellipsoid ell = resolveEllipsoid(srsName);
 		
@@ -77,6 +77,11 @@ public class RouteUtil {
 		double distanceRight = convertToMeters(widthRight);
 		
 		return calculatePolygon(ell, startCoord, endCoord, routeBearing, distanceRight, distanceLeft);
+	}
+	
+	public Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
+			String srsName) {
+		return routeToPolygon(start.getCoordinate(), end.getCoordinate(), widthLeft, widthRight, srsName);
 	}
 
 	private Ellipsoid resolveEllipsoid(String srsName) {
@@ -121,8 +126,7 @@ public class RouteUtil {
 		return UOMTools.convertToTargetUnit(number.getValue(), number.getUom(), "m");
 	}
 
-	private GlobalCoordinates createCoordinate(Point p) {
-		return new GlobalCoordinates(p.getY(), p.getX());
+	private GlobalCoordinates createCoordinate(Coordinate p) {
+		return new GlobalCoordinates(p.y, p.x);
 	}
-
 }

@@ -44,6 +44,7 @@ import aero.aixm.schema.x51.extensions.x3DExtension.RouteSegment3DGeometryExtens
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Polygon;
 
 import de.ifgi.mosia.geodesic.RouteUtil;
 
@@ -86,7 +87,7 @@ public class WPSConnector {
 
 	private ShellType createShell(List<Coordinate> coords,
 			NumberWithUOM widthLeft, NumberWithUOM widthRight) {
-		Object poly = routeUtil.routeToPolygon(coords.get(0), coords.get(coords.size() - 1),
+		Polygon poly = routeUtil.routeToPolygon(coords.get(0), coords.get(coords.size() - 1),
 				widthLeft, widthRight, null);
 		
 		
