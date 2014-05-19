@@ -103,7 +103,7 @@ public class RouteUtil {
 		
 		GeometryFactory factory = new GeometryFactory();
 		
-		CoordinateSequence points = new CoordinateArraySequence(createCoordinateArray(backRight, backLeft, frontLeft, frontRight));
+		CoordinateSequence points = new CoordinateArraySequence(createCoordinateArray(backLeft, frontLeft, frontRight, backRight));
 		
 		LinearRing lr = new LinearRing(points, factory);
 		
