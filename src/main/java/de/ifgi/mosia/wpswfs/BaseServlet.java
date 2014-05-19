@@ -19,6 +19,7 @@
 package de.ifgi.mosia.wpswfs;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -117,6 +118,17 @@ public class BaseServlet extends HttpServlet {
 	
 	private RequestHandler resolveHandler(HttpServletRequest req) throws ServiceException {
 		String request = req.getParameter("request");
+		
+		if (request == null || request.isEmpty()) {
+			Enumeration<?> it = req.getParameterNames();
+			while (it.hasMoreElements()) {
+				String next = it.nextElement().toString();
+				if (next.equalsIgnoreCase("request")) {
+					request = req.getParameter(next);
+					break;
+				}
+			}	
+		}
 		
 		if (request == null || request.isEmpty()) {
 			throw new ServiceException("The parameter 'request' was not provided");
