@@ -48,6 +48,7 @@ import org.n52.oxf.xmlbeans.tools.XmlUtil;
 import aero.aixm.schema.x51.CurvePropertyType;
 import aero.aixm.schema.x51.CurveType;
 import aero.aixm.schema.x51.RouteSegmentTimeSlicePropertyType;
+import aero.aixm.schema.x51.RouteSegmentTimeSliceType.Extension;
 import aero.aixm.schema.x51.RouteSegmentType;
 import aero.aixm.schema.x51.ValDistanceType;
 import aero.aixm.schema.x51.ValDistanceVerticalType;
@@ -95,7 +96,9 @@ public class WPSConnector {
 			
 			if (coords != null && coords.size() > 1) {
 				ShellType shell = createShell(coords, widthLeft, widthRight, lowerLimit, upperLimit);
-				ts.getRouteSegmentTimeSlice().addNewExtension().set(createExtension(shell));
+				Extension ext = ts.getRouteSegmentTimeSlice().addNewExtension();
+				ext.addNewAbstractRouteSegmentExtension().set(createExtension(shell));
+				XmlUtil.qualifySubstitutionGroup(ext.getAbstractRouteSegmentExtension(), RouteSegment3DGeometryExtensionDocument.type.getDocumentElementName());
 			}
 		}
 		
@@ -178,8 +181,7 @@ public class WPSConnector {
 	}
 
 	private XmlObject createExtension(ShellType shell) {
-		RouteSegment3DGeometryExtensionDocument doc = RouteSegment3DGeometryExtensionDocument.Factory.newInstance();
-		RouteSegment3DGeometryExtensionType ext = doc.addNewRouteSegment3DGeometryExtension();
+		RouteSegment3DGeometryExtensionType ext = RouteSegment3DGeometryExtensionType.Factory.newInstance();
 		
 		SolidPropertyType curve3D = ext.addNewCurveExtend3D();
 		
@@ -192,7 +194,7 @@ public class WPSConnector {
 		curve3D.setAbstractSolid(solid);
 		XmlUtil.qualifySubstitutionGroup(curve3D.getAbstractSolid(), SolidDocument.type.getDocumentElementName());
 		
-		return doc;
+		return ext;
 	}
 
 	private NumberWithUOM createNumberWithUOM(ValDistanceType vald) {

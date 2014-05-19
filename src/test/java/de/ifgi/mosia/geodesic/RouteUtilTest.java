@@ -42,17 +42,17 @@ public class RouteUtilTest {
 		
 		Coordinate[] coords = poly.getCoordinates();
 		
-		Assert.assertTrue(Math.abs(coords[0].x - (-5.592637452946747)) <= TOLERANCE);
-		Assert.assertTrue(Math.abs(coords[0].y - (41.62379661198949)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[0].x - (-5.678804997299011)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[0].y - (41.45217671744223)) <= TOLERANCE);
 		
-		Assert.assertTrue(Math.abs(coords[1].x - (-5.678804997299011)) <= TOLERANCE);
-		Assert.assertTrue(Math.abs(coords[1].y - (41.45217671744223)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[1].x - (-6.600126682886497)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[1].y - (41.7085413485116)) <= TOLERANCE);
 		
-		Assert.assertTrue(Math.abs(coords[2].x - (-6.600126682886497)) <= TOLERANCE);
-		Assert.assertTrue(Math.abs(coords[2].y - (41.7085413485116)) <= TOLERANCE);
-		
-		Assert.assertTrue(Math.abs(coords[3].x - (-6.51361654949153)) <= TOLERANCE);
-		Assert.assertTrue(Math.abs(coords[3].y - (41.88015353501876)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[2].x - (-6.51361654949153)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[2].y - (41.88015353501876)) <= TOLERANCE);
+
+		Assert.assertTrue(Math.abs(coords[3].x - (-5.592637452946747)) <= TOLERANCE);
+		Assert.assertTrue(Math.abs(coords[3].y - (41.62379661198949)) <= TOLERANCE);
 	}
 
 	private Point createPoint(GeometryFactory factory, double lat, double lon) {
