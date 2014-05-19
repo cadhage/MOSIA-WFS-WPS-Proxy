@@ -38,7 +38,7 @@ public class RouteUtilTest {
 		Point start = createPoint(factory, 41.5301944, -5.6396944);
 		Point end = createPoint(factory, 41.7865556, -6.5608611);
 		
-		Polygon poly = RouteUtil.routeToPolygon(start, end, new NumberWithUOM(5, "[nmi_i]"), new NumberWithUOM(6, "[nmi_i]"), "urn:ogc:def:crs:OGC:1.3:CRS84");
+		Polygon poly = new RouteUtil().routeToPolygon(start, end, new NumberWithUOM(5, "[nmi_i]"), new NumberWithUOM(6, "[nmi_i]"), "urn:ogc:def:crs:OGC:1.3:CRS84");
 		
 		Coordinate[] coords = poly.getCoordinates();
 		

@@ -41,12 +41,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3.x2003.x05.soapEnvelope.EnvelopeDocument;
 
+import com.google.inject.Inject;
+
 import aero.aixm.schema.x51.RouteSegmentType;
 import de.ifgi.mosia.wpswfs.ServiceException;
+import de.ifgi.mosia.wpswfs.wps.WPSConnector;
 
 public class GetFeatureHandler extends GenericRequestHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(GetFeatureHandler.class);
+	
+	@Inject
+	private WPSConnector wps;
 	
 	@Override
 	public boolean supportsRequestType(String request) {
@@ -182,7 +188,7 @@ public class GetFeatureHandler extends GenericRequestHandler {
 	 * @return the processed feature
 	 */
 	private XmlObject invokeWPS(RouteSegmentType obj) {
-		return obj;
+		return wps.processRouteSegment(obj);
 	}
 
 	@SuppressWarnings("unchecked")

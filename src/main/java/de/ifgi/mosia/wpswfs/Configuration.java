@@ -28,6 +28,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 
+import de.ifgi.mosia.geodesic.RouteUtil;
+import de.ifgi.mosia.wpswfs.wps.WPSConnector;
+
 @Singleton
 public class Configuration {
 
@@ -90,7 +93,9 @@ public class Configuration {
 
 		@Override
 		protected void configure() {
-			binder().bind(Configuration.class).in(Scopes.SINGLETON);
+			bind(Configuration.class).in(Scopes.SINGLETON);
+			bind(RouteUtil.class).in(Scopes.SINGLETON);
+			bind(WPSConnector.class).in(Scopes.SINGLETON);
 		}
 		
 	}

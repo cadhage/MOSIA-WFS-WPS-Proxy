@@ -22,9 +22,11 @@ import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GeodeticCalculator;
 import org.gavaghan.geodesy.GeodeticCurve;
 import org.gavaghan.geodesy.GlobalCoordinates;
+import org.n52.oxf.conversion.unit.CustomUnitConverter;
 import org.n52.oxf.conversion.unit.NumberWithUOM;
 import org.n52.oxf.conversion.unit.UOMTools;
 
+import com.google.inject.Singleton;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateSequence;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -33,10 +35,32 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
-
+@Singleton
 public class RouteUtil {
 	
-	public static Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
+	public RouteUtil() {
+		UOMTools.addCustomUnitConverter(new CustomUnitConverter() {
+			
+			private static final String RESULT_UOM = "[nmi_i]";
+			
+			@Override
+			public NumberWithUOM convert(double doubleValue) {
+				return new NumberWithUOM(doubleValue, RESULT_UOM);
+			}
+
+			@Override
+			public String getBaseUnit() {
+				return RESULT_UOM;
+			}
+
+			@Override
+			public String getUnitString() {
+				return "NM";
+			}
+		});
+	}
+	
+	public Polygon routeToPolygon(Point start, Point end, NumberWithUOM widthLeft, NumberWithUOM widthRight,
 			String srsName) {
 		Ellipsoid ell = resolveEllipsoid(srsName);
 		
@@ -55,14 +79,14 @@ public class RouteUtil {
 		return calculatePolygon(ell, startCoord, endCoord, routeBearing, distanceRight, distanceLeft);
 	}
 
-	private static Ellipsoid resolveEllipsoid(String srsName) {
+	private Ellipsoid resolveEllipsoid(String srsName) {
 		/*
 		 * TODO implement actual resolution
 		 */
 		return Ellipsoid.WGS84;
 	}
 
-	private static Polygon calculatePolygon(Ellipsoid ell, GlobalCoordinates startCoord, GlobalCoordinates endCoord,
+	private Polygon calculatePolygon(Ellipsoid ell, GlobalCoordinates startCoord, GlobalCoordinates endCoord,
 			double routeBearing, double distanceRight, double distanceLeft) {
 		GeodeticCalculator calc = new GeodeticCalculator();
 		
@@ -81,7 +105,7 @@ public class RouteUtil {
 		return new Polygon(lr, null, factory);
 	}
 
-	private static Coordinate[] createCoordinateArray(GlobalCoordinates... p) {
+	private Coordinate[] createCoordinateArray(GlobalCoordinates... p) {
 		Coordinate[] result = new Coordinate[p.length+1];
 		
 		int i = 0;
@@ -93,11 +117,11 @@ public class RouteUtil {
 		return result;
 	}
 
-	private static double convertToMeters(NumberWithUOM number) {
+	private double convertToMeters(NumberWithUOM number) {
 		return UOMTools.convertToTargetUnit(number.getValue(), number.getUom(), "m");
 	}
 
-	private static GlobalCoordinates createCoordinate(Point p) {
+	private GlobalCoordinates createCoordinate(Point p) {
 		return new GlobalCoordinates(p.getY(), p.getX());
 	}
 

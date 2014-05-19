@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:aixm="http://www.aixm.aero/schema/5.1"
+	xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:mosia="http://www.aixm.aero/schema/5.1/extensions/3DExtension"
+	elementFormDefault="qualified"
+	targetNamespace="http://www.aixm.aero/schema/5.1/extensions/3DExtension"
+	version="1.0">
+	<import namespace="http://www.aixm.aero/schema/5.1"
+		schemaLocation="http://www.aixm.aero/schema/5.1/AIXM_Features.xsd" />
+	<import namespace="http://www.opengis.net/gml/3.2"
+		schemaLocation="http://www.aixm.aero/schema/5.1/ISO_19136_Schemas/gml.xsd" />
+	<!--XML Schema document created by ShapeChange - http://shapechange.net/ -->
+	<element name="RouteSegment3DGeometryExtension"
+		substitutionGroup="aixm:AbstractRouteSegmentExtension" type="mosia:RouteSegment3DGeometryExtensionType">
+		<annotation>
+			<documentation>AIXM 5.1 extension to route segment providing a 3D
+				geometry to the Route Segment.</documentation>
+		</annotation>
+	</element>
+	<complexType name="RouteSegment3DGeometryExtensionType">
+		<complexContent>
+			<extension base="aixm:AbstractExtensionType">
+				<sequence>
+					<element name="curveExtend3D" type="gml:SolidPropertyType">
+						<annotation>
+							<documentation>curveExtend3D of type GM_Solid (gml:Solid)
+								provides a type for storing 3D geometry.</documentation>
+						</annotation>
+					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="RouteSegment3DGeometryExtensionPropertyType">
+		<sequence minOccurs="0">
+			<element ref="mosia:RouteSegment3DGeometryExtension" />
+		</sequence>
+		<attributeGroup ref="gml:AssociationAttributeGroup" />
+		<attributeGroup ref="gml:OwnershipAttributeGroup" />
+	</complexType>
+</schema>
