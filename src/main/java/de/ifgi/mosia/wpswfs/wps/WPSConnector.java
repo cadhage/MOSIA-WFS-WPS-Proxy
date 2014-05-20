@@ -142,8 +142,8 @@ public class WPSConnector {
 		z.z = w.z;
 		
 		ShellType shell = ShellType.Factory.newInstance();
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, c, d, a}, gmlIdBase+"-bottom");
-		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {w, z, y, x, w}, gmlIdBase+"-top");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, d, c, b, a}, gmlIdBase+"-bottom");
+		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {w, x, y, z, w}, gmlIdBase+"-top");
 		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, w, z, d, a}, gmlIdBase+"-front");
 		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {b, c, y, x, b}, gmlIdBase+"-back");
 		createSolidFace(shell.addNewSurfaceMember(), new Coordinate[] {a, b, x, w, a}, gmlIdBase+"-left");
